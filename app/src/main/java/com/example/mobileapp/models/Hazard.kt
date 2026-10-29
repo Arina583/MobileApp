@@ -1,5 +1,6 @@
 package com.example.mobileapp.models
 
+import org.locationtech.jts.geom.Geometry
 import java.util.Date
 
 data class Hazard(
@@ -7,7 +8,7 @@ data class Hazard(
     val areaId: Long? = null,
     val dangerTypeId: Long? = null,
     val severity: Int,
-//    val location: Geometry,
+    val location: Geometry,
     val radius: Double,
     val statusId: Long? = null,
     val description: String,
