@@ -37,8 +37,15 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
+    implementation(libs.play.services.maps)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    //библиотека для работы с geo
     implementation("org.locationtech.jts:jts-core:1.19.0")
+    //работа с OSM
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("org.osmdroid:osmdroid-wms:6.1.20")
+    implementation("org.osmdroid:osmdroid-mapsforge:6.1.20")
+
 }
