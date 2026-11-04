@@ -7,20 +7,16 @@ import org.osmdroid.views.MapView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
-    private lateinit var mapApi: MapApi
+    private var mapApi = MapApi()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Берём MapView, который уже есть в layout
         mapView = findViewById(R.id.mapView2)
-
-        // Инициализируем интеграционный класс
-        mapApi = MapApi(this)
-
-        // Настраиваем существующий mapView (зум, центр, тайлы)
         mapApi.setupMap(mapView)
+        mapApi.addTrailPath(mapView)          // <-- добавить тропы
+//        mapApi.addDangerMarker(mapView, ...) // <-- и опасные участки
     }
 
     override fun onResume() {
@@ -33,8 +29,8 @@ class MainActivity : AppCompatActivity() {
         mapView.onPause()
     }
 
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        mapView.destroy() // Освобождаем ресурсы Osmdroid
-//    }
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDetach() // Освобождаем ресурсы
+    }
 }

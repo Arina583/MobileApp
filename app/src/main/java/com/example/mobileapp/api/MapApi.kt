@@ -1,72 +1,56 @@
 package com.example.mobileapp.api
 
-import android.content.Context
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.modules.ArchiveFileFactory
-import org.osmdroid.tileprovider.modules.OfflineTileProvider
-import org.osmdroid.tileprovider.tilesource.FileBasedTileSource
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.tileprovider.util.SimpleRegisterReceiver
+import android.graphics.Color
+import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import java.io.File
+import org.osmdroid.views.overlay.Marker
 
-class MapApi(private val context: Context) {
-    // Метод для настройки уже существующего MapView
+class MapApi {
+    val tileSource = CartoTileSource("cb1_52a2_1_523fd23a1b11d498da8f10a4")
+
     fun setupMap(mapView: MapView) {
-        // Конфигурация Osmdroid (вызывается один раз при старте приложения)
-        Configuration.getInstance().load(
-            context,
-            context.getSharedPreferences("main", android.content.Context.MODE_PRIVATE)
-        )
-        Configuration.getInstance().userAgentValue = context.packageName
+        mapView.setTileSource(tileSource)
 
-        // Путь к файлу в assets
-        val mbtilesFile = File(context.filesDir, "forest_map_6-9.mbtiles")
-
-//        mapView.setTileSource(TileSourceFactory.MAPNIK) // Позже будет заменен на офлайн-тайлы
-
-        // Если файл ещё не скопирован из assets в filesDir — сделай это один раз при старте
-        if (!mbtilesFile.exists()) {
-            context.assets.open("forest_map_6-9.mbtiles").use { input ->
-                mbtilesFile.outputStream().use { output -> input.copyTo(output) }
-            }
-        }
-
-        // Подключаем офлайн-архив как источник тайлов
-        if (ArchiveFileFactory.isFileExtensionRegistered("mbtiles")) {
-            val tileProvider = OfflineTileProvider(
-                SimpleRegisterReceiver(context),
-                arrayOf(mbtilesFile)
-            )
-            mapView.tileProvider = tileProvider
-
-            // Узнаём, какой tile source записан в архиве
-            val archives = tileProvider.archives
-            if (archives.isNotEmpty()) {
-                val sources = archives[0].tileSources
-                mapView.setTileSource(
-                    if (sources.isNotEmpty()) FileBasedTileSource.getSource(sources.first())
-                    else TileSourceFactory.DEFAULT_TILE_SOURCE
-                )
-            }
-            mapView.setUseDataConnection(false) // работаем только офлайн
-        } else {
-            // Запасной вариант — онлайн-карта
-            mapView.setTileSource(TileSourceFactory.MAPNIK)
-        }
+        mapView.setMultiTouchControls(true)
+        mapView.isTilesScaledToDpi = true
 
         val startPoint = GeoPoint(56.129057, 40.406635) // Владимир
-        mapView.controller.setZoom(9.0)
+        mapView.controller.setZoom(10.0)
         mapView.controller.setCenter(startPoint)
     }
 
-    // Добавление маркера опасности
-//    fun addDangerMarker(mapView: MapView, latitude: Double, longitude: Double, title: String? = null) {
+    fun addTrailPath(mapView: MapView) {
+        val trailPoints = listOf(
+            GeoPoint(56.129057, 40.406635),
+            GeoPoint(56.130100, 40.410200),
+            GeoPoint(56.131500, 40.412300),
+            GeoPoint(56.133000, 40.415000)
+        )
+
+        val polyline = org.osmdroid.views.overlay.Polyline(mapView)
+        polyline.setPoints(trailPoints)
+        polyline.color = Color.parseColor("#2E7D32")       // Тёмно-зелёный
+        polyline.width = 8f                                 // Толщина линии
+//        polyline. = 0.9f                              // Прозрачность
+        polyline.title = "Лесная тропа (тестовая)"
+
+        mapView.overlays.add(polyline)
+        mapView.invalidate()
+    }
+
+
+//    fun addDangerMarker(
+//        mapView: MapView,
+//        latitude: Double,
+//        longitude: Double,
+//        title: String? = "Опасный участок"
+//    ) {
 //        val marker = Marker(mapView)
 //        marker.position = GeoPoint(latitude, longitude)
 //        marker.title = title
-//        // Далее будет добавлена иконка, цвет, описание (возможно что-то еще)
+//        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 //        mapView.overlays.add(marker)
+//        mapView.invalidate()
 //    }
 }
