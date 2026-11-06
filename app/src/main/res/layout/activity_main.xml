@@ -11,8 +11,83 @@
         android:id="@+id/mapView2"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <!-- Ряд круглых кнопок, выдвигается слева направо -->
+    <LinearLayout
+        android:id="@+id/actionRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="@drawable/bg_menu_panel"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/fabMenu"
+        app:layout_constraintStart_toEndOf="@id/fabMenu">
+
+        <ImageButton
+            android:id="@+id/btnMap"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:padding="8dp"
+            android:background="@drawable/ic_map"
+            android:contentDescription="Карты"
+            app:tint="#333333" />
+
+        <ImageButton
+            android:id="@+id/btnHazards"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:padding="8dp"
+            android:background="@drawable/ic_hazard"
+            android:contentDescription="Опасные участки"
+            app:tint="#333333" />
+
+        <ImageButton
+            android:id="@+id/btnRoute"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:padding="8dp"
+            android:background="@drawable/ic_route"
+            android:contentDescription="Маршрут"
+            app:tint="#333333" />
+
+        <ImageButton
+            android:id="@+id/btnCloudy"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:padding="8dp"
+            android:background="@drawable/ic_cloudy"
+            android:contentDescription="Погода"
+            app:tint="#333333" />
+
+        <ImageButton
+            android:id="@+id/btnHistory"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:background="@drawable/ic_history"
+            android:contentDescription="История"
+            app:tint="#333333" />
+    </LinearLayout>
+
+    <!-- Кнопка-триггер -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_menu"
+        android:contentDescription="Меню"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

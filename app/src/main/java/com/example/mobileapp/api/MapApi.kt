@@ -20,24 +20,25 @@ class MapApi {
         mapView.controller.setCenter(startPoint)
     }
 
-    fun addTrailPath(mapView: MapView) {
-        val trailPoints = listOf(
-            GeoPoint(56.129057, 40.406635),
-            GeoPoint(56.130100, 40.410200),
-            GeoPoint(56.131500, 40.412300),
-            GeoPoint(56.133000, 40.415000)
-        )
-
-        val polyline = org.osmdroid.views.overlay.Polyline(mapView)
-        polyline.setPoints(trailPoints)
-        polyline.color = Color.parseColor("#2E7D32")       // Тёмно-зелёный
-        polyline.width = 8f                                 // Толщина линии
-//        polyline. = 0.9f                              // Прозрачность
-        polyline.title = "Лесная тропа (тестовая)"
-
-        mapView.overlays.add(polyline)
-        mapView.invalidate()
-    }
+    //добавление линий (далее будет реализовано с помощью json)
+//    fun addTrailPath(mapView: MapView) {
+//        val trailPoints = listOf(
+//            GeoPoint(56.129057, 40.406635),
+//            GeoPoint(56.130100, 40.410200),
+//            GeoPoint(56.131500, 40.412300),
+//            GeoPoint(56.133000, 40.415000)
+//        )
+//
+//        val polyline = org.osmdroid.views.overlay.Polyline(mapView)
+//        polyline.setPoints(trailPoints)
+//        polyline.color = Color.parseColor("#2E7D32")       // Тёмно-зелёный
+//        polyline.width = 8f                                 // Толщина линии
+////        polyline. = 0.9f                              // Прозрачность
+//        polyline.title = "Лесная тропа (тестовая)"
+//
+//        mapView.overlays.add(polyline)
+//        mapView.invalidate()
+//    }
 
 
 //    fun addDangerMarker(
