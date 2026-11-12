@@ -10,6 +10,8 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
+import com.example.mobileapp.logic.HazardActivity
+import com.example.mobileapp.logic.RouteActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class Menu(private val activity: Activity) {
@@ -46,7 +48,7 @@ class Menu(private val activity: Activity) {
             if (!isMenuOpen) openMenu() else closeMenu()
         }
 
-        // Обработчики кнопок — заготовки
+        // Обработчики кнопок
         activity.findViewById<ImageButton>(R.id.btnMap).setOnClickListener {
             closeMenu()
             openMap()
@@ -120,12 +122,12 @@ class Menu(private val activity: Activity) {
     }
 
     private fun openRoute() {
-        val intent = Intent(activity, ActivityRoute::class.java)
+        val intent = Intent(activity, RouteActivity::class.java)
         activity.startActivity(intent)
     }
 
     private fun openHazard() {
-        val intent = Intent(activity, ActivityHazard::class.java)
+        val intent = Intent(activity, HazardActivity::class.java)
         activity.startActivity(intent)
     }
 

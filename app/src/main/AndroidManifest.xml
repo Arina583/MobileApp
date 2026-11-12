@@ -33,10 +33,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.ActivityRoute"
+            android:name=".logic.RouteActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.ActivityHazard"
+            android:name=".logic.HazardActivity"
             android:exported="false" />
         <activity
             android:name=".ui.ActivityCloudy"
