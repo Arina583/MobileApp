@@ -64,7 +64,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardGarbage"
-                    style="@style/HazardTypeButton"
+                    style="@style/HazardTypeButtonGreen"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
@@ -74,7 +74,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardAnimals"
-                    style="@style/HazardTypeButton"
+                    style="@style/HazardTypeButtonGreen"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
@@ -84,7 +84,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardTrees"
-                    style="@style/HazardTypeButton"
+                    style="@style/HazardTypeButtonGreen"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -100,7 +100,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardWater"
-                    style="@style/HazardTypeButton"
+                    style="@style/HazardTypeButtonGreen"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
@@ -110,7 +110,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardRocks"
-                    style="@style/HazardTypeButton"
+                    style="@style/HazardTypeButtonGreen"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
@@ -120,7 +120,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardFire"
-                    style="@style/HazardTypeButton"
+                    style="@style/HazardTypeButtonGreen"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -134,10 +134,9 @@
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
-                <!-- Единственная «красная» кнопка -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardArea"
-                    style="@style/HazardTypeButton.Selected"
+                    style="@style/HazardTypeButtonRED"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"

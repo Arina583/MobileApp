@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Обычная кнопка типа: белая, зелёная обводка, зелёные текст и иконка -->
-    <style name="HazardTypeButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
-        <item name="android:backgroundTint">#FFFFFF</item>
-        <item name="android:textColor">#3D5C3A</item>
+    <style name="HazardTypeButtonGreen" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:backgroundTint">@color/hazard_type_bg</item>
+        <item name="android:textColor">@color/hazard_type_text</item>
         <item name="android:textSize">10sp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
+        <item name="android:elevation">3dp</item>
         <item name="android:padding">12dp</item>
         <item name="cornerRadius">12dp</item>
-        <item name="strokeColor">#3D5C3A</item>
+        <item name="strokeColor">@color/hazard_type_stroke</item>
         <item name="strokeWidth">1dp</item>
         <item name="iconGravity">textTop</item>
         <item name="iconPadding">6dp</item>
-        <item name="iconTint">#3D5C3A</item>
+        <item name="iconTint">@color/hazard_type_icon</item>
     </style>
 
     <!-- Красная кнопка: используется ТОЛЬКО для «Опасный участок» -->
-    <style name="HazardTypeButton.Selected">
-        <item name="android:backgroundTint">#FDE7E7</item>
-        <item name="android:textColor">#D32F2F</item>
-        <item name="iconTint">#D32F2F</item>
-        <item name="strokeColor">#D32F2F</item>
+    <style name="HazardTypeButtonRED" parent="HazardTypeButtonGreen">
+        <item name="android:backgroundTint">@color/hazard_type_bg_red</item>
+        <item name="android:textColor">@color/hazard_type_text_red</item>
+        <item name="iconTint">@color/hazard_type_icon_red</item>
+        <item name="strokeColor">@color/hazard_type_stroke_red</item>
     </style>
 
     <!-- Обычная кнопка режима -->
