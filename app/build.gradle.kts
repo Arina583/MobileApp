@@ -48,4 +48,5 @@ dependencies {
     implementation("org.osmdroid:osmdroid-wms:6.1.20")
     implementation("org.osmdroid:osmdroid-mapsforge:6.1.20")
 
+    implementation("com.carto:carto-mobile-sdk:4.4.6@aar")
 }

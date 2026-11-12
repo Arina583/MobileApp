@@ -33,6 +33,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".logic.MapPickerActivity"
+            android:exported="false" />
+        <activity
             android:name=".logic.RouteActivity"
             android:exported="false" />
         <activity
