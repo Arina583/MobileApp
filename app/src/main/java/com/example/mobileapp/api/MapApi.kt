@@ -1,6 +1,11 @@
 package com.example.mobileapp.api
 
 import android.graphics.Color
+import android.graphics.Point
+import android.util.Log
+import com.example.mobileapp.data.DangerTypeRepository
+import com.example.mobileapp.data.HazardRepository
+import com.example.mobileapp.models.Hazard
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -8,6 +13,8 @@ import org.osmdroid.views.overlay.Marker
 
 class MapApi {
     val tileSource = CartoTileSource("cb1_52a2_1_523fd23a1b11d498da8f10a4")
+
+    private var hazardMarkers: List<Marker> = emptyList()
 
     fun setupMap(mapView: MapView) {
         mapView.setTileSource(tileSource)
@@ -20,38 +27,33 @@ class MapApi {
         mapView.controller.setCenter(startPoint)
     }
 
-    //добавление линий (далее будет реализовано с помощью json)
-//    fun addTrailPath(mapView: MapView) {
-//        val trailPoints = listOf(
-//            GeoPoint(56.129057, 40.406635),
-//            GeoPoint(56.130100, 40.410200),
-//            GeoPoint(56.131500, 40.412300),
-//            GeoPoint(56.133000, 40.415000)
-//        )
-//
-//        val polyline = org.osmdroid.views.overlay.Polyline(mapView)
-//        polyline.setPoints(trailPoints)
-//        polyline.color = Color.parseColor("#2E7D32")       // Тёмно-зелёный
-//        polyline.width = 8f                                 // Толщина линии
-////        polyline. = 0.9f                              // Прозрачность
-//        polyline.title = "Лесная тропа (тестовая)"
-//
-//        mapView.overlays.add(polyline)
-//        mapView.invalidate()
-//    }
+    fun showHazards(mapView: MapView) {
 
+        // 1. Удаляем старые маркеры опасностей
+        hazardMarkers.forEach { mapView.overlays.remove(it) }
+        hazardMarkers = emptyList() // очищаем список ссылок
 
-//    fun addDangerMarker(
-//        mapView: MapView,
-//        latitude: Double,
-//        longitude: Double,
-//        title: String? = "Опасный участок"
-//    ) {
-//        val marker = Marker(mapView)
-//        marker.position = GeoPoint(latitude, longitude)
-//        marker.title = title
-//        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-//        mapView.overlays.add(marker)
-//        mapView.invalidate()
-//    }
+        // 2. Проходим по всем отметкам
+        val newMarkers = HazardRepository.getAll().mapNotNull { hazard ->
+            // Безопасное приведение типа: если это не Point, mapNotNull отбросит null
+            val point = hazard.location as? org.locationtech.jts.geom.Point ?: return@mapNotNull null
+
+            val marker = Marker(mapView)
+
+            // GeoPoint ждёт (lat, lon), а JTS хранит (x=lon, y=lat) — порядок обратный
+            marker.position = GeoPoint(point.y, point.x)
+
+            val typeName = DangerTypeRepository.nameFor(hazard.dangerTypeId)
+            marker.title = typeName
+            marker.snippet = hazard.description ?: ""
+
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+            mapView.overlays.add(marker)
+            marker
+        }
+
+        hazardMarkers = newMarkers
+        mapView.invalidate()
+    }
 }
