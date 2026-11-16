@@ -5,12 +5,12 @@ import java.util.Date
 
 data class Hazard(
     val id: Long? = null,
-    val areaId: Long? = null,
-    val dangerTypeId: Long? = null,
+    val areaId: Long = 1,
+    val dangerTypeId: Long,
     val severity: Int,
     val location: Geometry,
-    val radius: Double? = null,
-    val statusId: Long? = null,
+    val radius: Double = 0.0,
+    val statusId: Long = 1,
     val description: String? = null,
     val photoUrl: String? = null,
     val reportedAt: Date? = null,

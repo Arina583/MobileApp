@@ -1,4 +1,4 @@
-package com.example.mobileapp.logic
+package com.example.mobileapp.data
 
 object Severity {
     const val LOW = 1

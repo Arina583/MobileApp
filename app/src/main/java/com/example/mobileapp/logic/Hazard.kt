@@ -12,19 +12,23 @@ import com.example.mobileapp.R
 import com.example.mobileapp.data.DangerTypeRepository
 import com.example.mobileapp.data.Geo
 import com.example.mobileapp.data.HazardRepository
+import com.example.mobileapp.data.Severity
 import com.example.mobileapp.models.DangerType
 import com.example.mobileapp.models.Hazard
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import java.util.Locale
 
-class Hazard (private val activity: AppCompatActivity) {
+class Hazard(private val activity: AppCompatActivity) {
 
     var selectedHazardId: Int? = null
         private set
 
     var selectedLat: Double? = null
     var selectedLng: Double? = null
+
+    // Репозиторий на SQLite: создаём один раз на жизнь экрана
+    private val hazardRepository = HazardRepository(activity)
 
     private val hazardButtonsGreen = listOf(
         R.id.btnHazardGarbage,
@@ -51,26 +55,25 @@ class Hazard (private val activity: AppCompatActivity) {
     }
 
     init {
-
-        hazardButtonsGreen.forEach { id -> activity.findViewById<MaterialButton>(id).setOnClickListener { selectedHazard(id) } }
+        hazardButtonsGreen.forEach { id ->
+            activity.findViewById<MaterialButton>(id).setOnClickListener { selectedHazard(id) }
+        }
 
         activity.findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
-            backMap();
+            backMap()
         }
 
         activity.findViewById<View>(R.id.btnPickOnMap).setOnClickListener {
             mapPickerLauncher.launch(Intent(activity, MapPickerActivity::class.java))
         }
 
-        //Обработка отправки
+        // Обработка отправки
         activity.findViewById<View>(R.id.btnSubmit).setOnClickListener { submit() }
-
     }
 
     private fun submit() {
         val hazard = buildHazard()
         if (hazard == null) {
-            // Разбираемся, чего именно не хватает, чтобы подсказать пользователю
             when {
                 selectedHazardId == null -> Toast.makeText(activity, "Выберите тип опасности", Toast.LENGTH_SHORT).show()
                 selectedLat == null || selectedLng == null -> Toast.makeText(activity, "Выберите место на карте", Toast.LENGTH_SHORT).show()
@@ -78,10 +81,9 @@ class Hazard (private val activity: AppCompatActivity) {
             return
         }
 
-        HazardRepository.add(hazard)
+        hazardRepository.add(hazard)   // было: HazardRepository.add(hazard)
         Toast.makeText(activity, "Отметка сохранена", Toast.LENGTH_SHORT).show()
         resetForm()
-        activity.finish()
     }
 
     private fun buildHazard(): Hazard? {
@@ -90,11 +92,12 @@ class Hazard (private val activity: AppCompatActivity) {
         val lat = selectedLat ?: return null
         val lng = selectedLng ?: return null
 
-        val description = activity.findViewById<TextInputEditText>(R.id.etDescription).text?.toString()?.trim()?.ifEmpty { null }
+        val description = activity.findViewById<TextInputEditText>(R.id.etDescription)
+            .text?.toString()?.trim()?.ifEmpty { null }
 
         return Hazard(
             areaId = 1L,
-            dangerTypeId = typeFor(typeId).id,
+            dangerTypeId = typeFor(typeId).id ?: 0L,
             severity = Severity.MEDIUM,
             location = Geo.point(latitude = lat, longitude = lng),
             description = description
@@ -102,7 +105,6 @@ class Hazard (private val activity: AppCompatActivity) {
     }
 
     private fun resetForm() {
-        // сброс формы
         hazardButtonsGreen.forEach { activity.findViewById<MaterialButton>(it).isSelected = false }
         selectedHazardId = null
         selectedLat = null
@@ -110,7 +112,7 @@ class Hazard (private val activity: AppCompatActivity) {
         activity.findViewById<TextInputEditText>(R.id.etDescription).setText("")
         activity.findViewById<TextView>(R.id.tvCoordinates).visibility = View.GONE
 
-        activity.finish()
+        activity.finish()   // единственный finish — здесь
     }
 
     private fun typeFor(buttonId: Int): DangerType = when (buttonId) {

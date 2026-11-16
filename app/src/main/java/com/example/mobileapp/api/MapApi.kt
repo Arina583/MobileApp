@@ -1,5 +1,6 @@
 package com.example.mobileapp.api
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Point
 import android.util.Log
@@ -11,10 +12,12 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
-class MapApi {
+class MapApi (context: Context) {
     val tileSource = CartoTileSource("cb1_52a2_1_523fd23a1b11d498da8f10a4")
 
     private var hazardMarkers: List<Marker> = emptyList()
+
+    private var hazardRepository = HazardRepository(context)
 
     fun setupMap(mapView: MapView) {
         mapView.setTileSource(tileSource)
@@ -31,17 +34,17 @@ class MapApi {
 
         // 1. Удаляем старые маркеры опасностей
         hazardMarkers.forEach { mapView.overlays.remove(it) }
-        hazardMarkers = emptyList() // очищаем список ссылок
+        hazardMarkers = emptyList()
 
-        // 2. Проходим по всем отметкам
-        val newMarkers = HazardRepository.getAll().mapNotNull { hazard ->
-            // Безопасное приведение типа: если это не Point, mapNotNull отбросит null
-            val point = hazard.location as? org.locationtech.jts.geom.Point ?: return@mapNotNull null
+        // 2. Проходим по всем отметкам из базы
+        val newMarkers = hazardRepository.getAll().mapNotNull { hazard ->
+            val point = hazard.location as? org.locationtech.jts.geom.Point
+                ?: return@mapNotNull null
 
             val marker = Marker(mapView)
 
             // GeoPoint ждёт (lat, lon), а JTS хранит (x=lon, y=lat) — порядок обратный
-            marker.position = GeoPoint(point.y, point.x)
+            marker.position = GeoPoint(point.coordinate.y, point.coordinate.x)
 
             val typeName = DangerTypeRepository.nameFor(hazard.dangerTypeId)
             marker.title = typeName
@@ -53,7 +56,9 @@ class MapApi {
             marker
         }
 
+        // 3. Запоминаем созданные маркеры для последующей очистки
         hazardMarkers = newMarkers
+
         mapView.invalidate()
     }
 }

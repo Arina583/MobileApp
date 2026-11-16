@@ -10,7 +10,7 @@ import org.osmdroid.views.MapView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
-    private var mapApi = MapApi()
+    private lateinit var mapApi: MapApi
 
     private lateinit var menu: Menu
 
@@ -21,15 +21,16 @@ class MainActivity : AppCompatActivity() {
 
 
         mapView = findViewById(R.id.mapView2)
+        mapApi = MapApi(this)             // контекст передаём
         mapApi.setupMap(mapView)
-//        mapApi.addTrailPath(mapView)          // <-- добавить тропы
-        mapApi.showHazards(mapView) // <-- и опасные участки
+        mapApi.showHazards(mapView)       // <-- и опасные участки
 
         menu = Menu(this)
     }
 
     override fun onResume() {
         super.onResume()
+        mapView.onResume()
         mapApi.showHazards(mapView)
     }
 
