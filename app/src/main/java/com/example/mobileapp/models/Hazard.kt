@@ -16,4 +16,5 @@ data class Hazard(
     val reportedAt: Date? = null,
     val confirmedByUser: Date? = null,
     val sequenceNumber: Int? = null,
+    val uuid: String?,
 )

@@ -2,6 +2,7 @@ package com.example.mobileapp.logic
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
@@ -13,6 +14,7 @@ import com.example.mobileapp.data.DangerTypeRepository
 import com.example.mobileapp.data.Geo
 import com.example.mobileapp.data.HazardRepository
 import com.example.mobileapp.data.Severity
+import com.example.mobileapp.data.SyncManager
 import com.example.mobileapp.models.DangerType
 import com.example.mobileapp.models.Hazard
 import com.google.android.material.button.MaterialButton
@@ -26,6 +28,8 @@ class Hazard(private val activity: AppCompatActivity) {
 
     var selectedLat: Double? = null
     var selectedLng: Double? = null
+
+    var selectedUuid: String? = null
 
     // Репозиторий на SQLite: создаём один раз на жизнь экрана
     private val hazardRepository = HazardRepository(activity)
@@ -72,7 +76,9 @@ class Hazard(private val activity: AppCompatActivity) {
     }
 
     private fun submit() {
+        Log.w("Hazard", ">>> submit() вызван")   // контрольная точка
         val hazard = buildHazard()
+        Log.w("Hazard", ">>> buildHazard = ${hazard != null}")
         if (hazard == null) {
             when {
                 selectedHazardId == null -> Toast.makeText(activity, "Выберите тип опасности", Toast.LENGTH_SHORT).show()
@@ -84,6 +90,7 @@ class Hazard(private val activity: AppCompatActivity) {
         hazardRepository.add(hazard)   // было: HazardRepository.add(hazard)
         Toast.makeText(activity, "Отметка сохранена", Toast.LENGTH_SHORT).show()
         resetForm()
+        SyncManager.getInstance(activity).syncNow()
     }
 
     private fun buildHazard(): Hazard? {
@@ -95,12 +102,15 @@ class Hazard(private val activity: AppCompatActivity) {
         val description = activity.findViewById<TextInputEditText>(R.id.etDescription)
             .text?.toString()?.trim()?.ifEmpty { null }
 
+        val uuid = selectedUuid ?: java.util.UUID.randomUUID().toString()
+
         return Hazard(
             areaId = 1L,
             dangerTypeId = typeFor(typeId).id ?: 0L,
             severity = Severity.MEDIUM,
             location = Geo.point(latitude = lat, longitude = lng),
-            description = description
+            description = description,
+            uuid = uuid
         )
     }
 

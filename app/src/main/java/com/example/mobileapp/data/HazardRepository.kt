@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.example.mobileapp.models.Hazard
+import org.json.JSONObject
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.io.WKTReader
@@ -45,6 +46,7 @@ class HazardRepository(context: Context) {
             put("description", hazard.description)
             put("reported_at", dateFormat.format(Date()))
             put("sequence_number", -1)                // не выгружено на сервер
+            put("uuid", hazard.uuid)
         }
 
         val newId = db.insert("Hazard", null, values)
@@ -61,7 +63,7 @@ class HazardRepository(context: Context) {
         val result = mutableListOf<Hazard>()
         db.rawQuery(
             """SELECT h.id, h.area_id, h.danger_type_id, h.severity,
-                      h.location, h.radius, h.status_id, h.description, h.reported_at
+                      h.location, h.radius, h.status_id, h.description, h.reported_at, h.uuid
                FROM Hazard h
                JOIN Status s ON s.id = h.status_id
                WHERE s.name != 'устранена'
@@ -91,16 +93,19 @@ class HazardRepository(context: Context) {
 
     // ---------- служебные функции ----------
 
-    private fun readHazard(cursor: android.database.Cursor): Hazard? {
-        val id = cursor.getLong(0)
-        val areaId = cursor.getLong(1)
-        val dangerTypeId = cursor.getLong(2)
-        val severity = cursor.getInt(3)
-        val wkt = cursor.getString(4)
-        val radius = cursor.getDouble(5)
-        val statusId = cursor.getLong(6)
-        val description = cursor.getString(7)
-        val reportedAt = cursor.getString(8)
+        private fun readHazard(cursor: android.database.Cursor): Hazard? {
+        fun col(name: String) = cursor.getColumnIndexOrThrow(name)
+
+        val id = cursor.getLong(col("id"))
+        val areaId = cursor.getLong(col("area_id"))
+        val dangerTypeId = cursor.getLong(col("danger_type_id"))
+        val severity = cursor.getInt(col("severity"))
+        val wkt = cursor.getString(col("location"))
+        val radius = cursor.getDouble(col("radius"))
+        val statusId = cursor.getLong(col("status_id"))
+        val description = cursor.getString(col("description"))
+        val reportedAt = cursor.getString(col("reported_at"))
+        val uuid = cursor.getString(col("uuid"))
 
         val point = parseWkt(wkt) ?: return null
 
@@ -111,7 +116,8 @@ class HazardRepository(context: Context) {
             severity = severity,
             location = point,
             description = description,
-            reportedAt = reportedAt?.let { dateFormat.parse(it) }
+            reportedAt = reportedAt?.let { dateFormat.parse(it) },
+            uuid = uuid
         )
     }
 
@@ -135,5 +141,47 @@ class HazardRepository(context: Context) {
                 Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2)
         return 2 * r * Math.asin(Math.sqrt(a))
+    }
+
+    //Для работы с сервером
+    /** Записи, ещё не выгруженные на сервер. */
+    fun unsynced(): List<Hazard> {
+        val result = mutableListOf<Hazard>()
+        db.rawQuery("""SELECT id, area_id, danger_type_id, severity, location,
+                          radius, status_id, description, reported_at, uuid
+                   FROM Hazard WHERE sequence_number = -1
+                   ORDER BY id""", null).use { c ->
+            while (c.moveToNext()) readHazard(c)?.let { result += it }
+        }
+        return result
+    }
+
+    /** Пометить запись как выгруженную (серверный номер вместо -1). */
+    fun markSynced(localId: Long, sequence: Long) {
+        db.execSQL("UPDATE Hazard SET sequence_number = ? WHERE id = ?",
+            arrayOf(sequence, localId))
+    }
+
+    /** Есть ли локально запись, пришедшая с сервера (по uuid). */
+    fun localIdByUuid(uuid: String): Long? =
+        db.rawQuery("SELECT id FROM Hazard WHERE uuid = ?", arrayOf(uuid)).use { c ->
+            if (c.moveToFirst()) c.getLong(0) else null
+        }
+
+    /** Вставка чужой метки, полученной с сервера. */
+    fun insertFromServer(h: JSONObject, sequence: Long): Long {
+        val values = ContentValues().apply {
+            put("area_id", h.getLong("area_id"))
+            put("danger_type_id", h.getLong("danger_type_id"))
+            put("severity", h.getInt("severity"))
+            put("location", h.getString("location"))
+            put("radius", h.getDouble("radius"))
+            put("status_id", h.getInt("status_id"))
+            put("description", h.optString("description", ""))
+            put("reported_at", h.getString("reported_at"))
+            put("sequence_number", sequence)
+            put("uuid", h.getString("uuid"))
+        }
+        return db.insert("Hazard", null, values)
     }
 }

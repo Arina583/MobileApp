@@ -3,6 +3,7 @@ package com.example.mobileapp
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mobileapp.api.MapApi
+import com.example.mobileapp.data.SyncManager
 import com.example.mobileapp.logic.Hazard
 import com.example.mobileapp.logic.Route
 import com.example.mobileapp.ui.Menu
@@ -26,12 +27,20 @@ class MainActivity : AppCompatActivity() {
         mapApi.showHazards(mapView)       // <-- и опасные участки
 
         menu = Menu(this)
+
+        SyncManager.getInstance(this).syncNow {
+            runOnUiThread { mapApi.showHazards(mapView) }
+        }
     }
 
     override fun onResume() {
         super.onResume()
         mapView.onResume()
         mapApi.showHazards(mapView)
+
+        SyncManager.getInstance(this).syncNow {
+            runOnUiThread { mapApi.showHazards(mapView) }
+        }
     }
 
     override fun onPause() {
