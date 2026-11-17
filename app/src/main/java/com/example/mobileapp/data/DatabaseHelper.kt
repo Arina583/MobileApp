@@ -34,7 +34,7 @@ class DatabaseHelper private constructor(private var context: Context) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.d("DatabaseHelper", "Обновление базы: $oldVersion -> $newVersion")
         // Пока схема готовая из assets — здесь ничего не делаем.
-        // При изменении схемы: поднять DATABASE_VERSION и скопировать новый файл (см. примечание ниже)
+        // При изменении схемы: поднять DATABASE_VERSION и скопировать новый файл
     }
 
     override fun onConfigure(db: SQLiteDatabase) {

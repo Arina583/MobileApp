@@ -7,23 +7,32 @@ import android.util.Log
 import com.example.mobileapp.data.DangerTypeRepository
 import com.example.mobileapp.data.HazardRepository
 import com.example.mobileapp.models.Hazard
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Marker
 
-class MapApi (context: Context) {
-    val tileSource = CartoTileSource("cb1_52a2_1_523fd23a1b11d498da8f10a4")
+class MapApi (private var context: Context) {
+//    val tileSource = CartoTileSource("cb1_52a2_1_523fd23a1b11d498da8f10a4")
 
     private var hazardMarkers: List<Marker> = emptyList()
 
     private var hazardRepository = HazardRepository(context)
 
     fun setupMap(mapView: MapView) {
-        mapView.setTileSource(tileSource)
+//        mapView.setTileSource(tileSource)
+        mapView.setTileSource(CartoTileSource())
 
         mapView.setMultiTouchControls(true)
         mapView.isTilesScaledToDpi = true
+
+        val copyright = CopyrightOverlay(context).apply {
+            setCopyrightNotice("© OpenStreetMap contributors, © CyclOSM")
+        }
+
+        mapView.overlays.add(copyright)
 
         val startPoint = GeoPoint(56.129057, 40.406635) // Владимир
         mapView.controller.setZoom(10.0)
