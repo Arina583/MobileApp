@@ -164,7 +164,6 @@ class Hazard(private val activity: AppCompatActivity) {
 
     //закрытие активности
     private fun backMap() {
-        Log.w("Hazard", ">>> backMap() выполняется")
         activity.finish()
     }
 }

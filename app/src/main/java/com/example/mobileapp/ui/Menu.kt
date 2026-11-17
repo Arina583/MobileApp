@@ -10,7 +10,9 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
+import com.example.mobileapp.logic.CloudyActivity
 import com.example.mobileapp.logic.HazardActivity
+import com.example.mobileapp.logic.HistoryActivity
 import com.example.mobileapp.logic.RouteActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -132,12 +134,12 @@ class Menu(private val activity: Activity) {
     }
 
     private fun openCloudy() {
-        val intent = Intent(activity, ActivityCloudy::class.java)
+        val intent = Intent(activity, CloudyActivity::class.java)
         activity.startActivity(intent)
     }
 
     private fun openHistory() {
-        val intent = Intent(activity, ActivityHistory::class.java)
+        val intent = Intent(activity, HistoryActivity::class.java)
         activity.startActivity(intent)
     }
 }

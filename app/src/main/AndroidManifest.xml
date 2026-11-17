@@ -43,10 +43,10 @@
             android:name=".logic.HazardActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.ActivityCloudy"
+            android:name=".logic.CloudyActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.ActivityHistory"
+            android:name=".logic.HistoryActivity"
             android:exported="false" />
     </application>
 
