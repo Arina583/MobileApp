@@ -34,19 +34,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".logic.MapPickerActivity"
+            android:name=".activity.MapPickerActivity"
             android:exported="false" />
         <activity
-            android:name=".logic.RouteActivity"
+            android:name=".activity.RouteActivity"
             android:exported="false" />
         <activity
-            android:name=".logic.HazardActivity"
+            android:name=".activity.HazardActivity"
             android:exported="false" />
         <activity
-            android:name=".logic.CloudyActivity"
+            android:name=".activity.CloudyActivity"
             android:exported="false" />
         <activity
-            android:name=".logic.HistoryActivity"
+            android:name=".activity.HistoryActivity"
             android:exported="false" />
     </application>
 

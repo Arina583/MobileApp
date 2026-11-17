@@ -2,7 +2,6 @@ package com.example.mobileapp.ui
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -10,10 +9,10 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
-import com.example.mobileapp.logic.CloudyActivity
-import com.example.mobileapp.logic.HazardActivity
-import com.example.mobileapp.logic.HistoryActivity
-import com.example.mobileapp.logic.RouteActivity
+import com.example.mobileapp.activity.CloudyActivity
+import com.example.mobileapp.activity.HazardActivity
+import com.example.mobileapp.activity.HistoryActivity
+import com.example.mobileapp.activity.RouteActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class Menu(private val activity: Activity) {

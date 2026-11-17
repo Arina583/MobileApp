@@ -1,9 +1,9 @@
-package com.example.mobileapp.logic
+package com.example.mobileapp.activity
 
 import android.content.Intent
 import android.os.Bundle
-import com.carto.core.MapPos
 import androidx.appcompat.app.AppCompatActivity
+import com.carto.core.MapPos
 import com.carto.datasources.HTTPTileDataSource
 import com.carto.layers.RasterTileLayer
 import com.carto.projections.Projection

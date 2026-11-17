@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mobileapp.R
+import com.example.mobileapp.activity.MapPickerActivity
 import com.example.mobileapp.data.DangerTypeRepository
 import com.example.mobileapp.data.Geo
 import com.example.mobileapp.data.HazardRepository

@@ -1,8 +1,9 @@
-package com.example.mobileapp.logic
+package com.example.mobileapp.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mobileapp.R
+import com.example.mobileapp.logic.History
 
 class HistoryActivity: AppCompatActivity() {
 
