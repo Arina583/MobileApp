@@ -23,19 +23,6 @@ class HazardRepository(context: Context) {
 
     /** Добавление отметки об опасности в таблицу Hazard. */
     fun add(hazard: Hazard): Hazard {
-        // ВРЕМЕННАЯ ДИАГНОСТИКА FK: проверяем каждую ссылку до вставки
-        listOf(
-            "Area" to hazard.areaId,
-            "Danger_type" to hazard.dangerTypeId,
-            "Status" to 1L
-        ).forEach { (table, id) ->
-            db.rawQuery("SELECT id FROM $table WHERE id = ?", arrayOf(id.toString())).use { c ->
-                if (!c.moveToFirst()) {
-                    Log.e("HazardRepository", "FK СЛОМАН: в таблице $table нет строки id=$id")
-                }
-            }
-        }
-
         val values = ContentValues().apply {
             put("area_id", hazard.areaId)
             put("danger_type_id", hazard.dangerTypeId)
@@ -91,9 +78,7 @@ class HazardRepository(context: Context) {
             d <= radiusKm + h.radius / 1000.0
         }
 
-    // ---------- служебные функции ----------
-
-        private fun readHazard(cursor: android.database.Cursor): Hazard? {
+    private fun readHazard(cursor: android.database.Cursor): Hazard? {
         fun col(name: String) = cursor.getColumnIndexOrThrow(name)
 
         val id = cursor.getLong(col("id"))

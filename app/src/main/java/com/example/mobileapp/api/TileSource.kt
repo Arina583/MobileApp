@@ -3,7 +3,7 @@ package com.example.mobileapp.api
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.util.MapTileIndex
 
-class CartoTileSource : OnlineTileSourceBase(
+class TileSource : OnlineTileSourceBase(
     "CyclOSM", 0, 19, 256, ".png",
     arrayOf(
         "https://a.tile-cyclosm.openstreetmap.fr/cyclosm/",

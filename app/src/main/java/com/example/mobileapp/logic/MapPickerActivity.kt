@@ -24,17 +24,17 @@ class MapPickerActivity : AppCompatActivity() {
 
         mapView = findViewById(R.id.map_view)
 
-        // 1. Растровый слой CARTO с API-ключом.
+        // 1. Растровый слой
         val dataSource = HTTPTileDataSource(
             0, 20,
-            "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=cb1_52a2_1_523fd23a1b11d498da8f10a4"
+            "https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
         )
         mapView.layers.add(RasterTileLayer(dataSource))
 
-        // 2. Стартовая точка и зум — как в MapApi.setupMap (Владимир, z=10)
+        // 2. Стартовая точка и зум (Владимир, z=10)
         projection = mapView.options.baseProjection
         // В MapApi: GeoPoint(56.129057, 40.406635) — это (lat, lon).
-        // В CARTO MapPos: x = долгота, y = широта, поэтому порядок обратный.
+        // Здесь x = долгота, y = широта, поэтому порядок обратный.
         val start = projection.fromWgs84(MapPos(40.406635, 56.129057))
         mapView.setFocusPos(start, 0f)
         mapView.setZoom(10f, 0f)

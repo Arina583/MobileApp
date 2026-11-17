@@ -15,10 +15,8 @@ import java.util.concurrent.Executors
 class SyncManager private constructor(private val context: Context) {
 
     companion object {
-        // Эмулятор: 10.0.2.2 — это ваш компьютер.
-        // Реальный телефон в одной Wi-Fi сети: IP компьютера из ipconfig.
-        private const val SERVER_URL = "http://10.0.2.2:5000"
-        /*private const val SERVER_URL = "http://192.168.0.16:5000"*/
+        private const val SERVER_URL = "http://10.0.2.2:5000" //для запуска на эмуляторе
+        /*private const val SERVER_URL = "http://192.168.0.16:5000"*/ //для запуска на реальном телефоне
         private const val PREFS = "sync"
         private const val KEY_LAST_SEQ = "last_sequence"
 

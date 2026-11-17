@@ -76,9 +76,9 @@ class Hazard(private val activity: AppCompatActivity) {
     }
 
     private fun submit() {
-        Log.w("Hazard", ">>> submit() вызван")   // контрольная точка
+        Log.w("Hazard", ">>> submit() вызван")   // контрольная точка (для проверки)
         val hazard = buildHazard()
-        Log.w("Hazard", ">>> buildHazard = ${hazard != null}")
+        Log.w("Hazard", ">>> buildHazard = ${hazard != null}") // (для проверки)
         if (hazard == null) {
             when {
                 selectedHazardId == null -> Toast.makeText(activity, "Выберите тип опасности", Toast.LENGTH_SHORT).show()
@@ -87,7 +87,7 @@ class Hazard(private val activity: AppCompatActivity) {
             return
         }
 
-        hazardRepository.add(hazard)   // было: HazardRepository.add(hazard)
+        hazardRepository.add(hazard)
         Toast.makeText(activity, "Отметка сохранена", Toast.LENGTH_SHORT).show()
         resetForm()
         SyncManager.getInstance(activity).syncNow()
@@ -122,7 +122,7 @@ class Hazard(private val activity: AppCompatActivity) {
         activity.findViewById<TextInputEditText>(R.id.etDescription).setText("")
         activity.findViewById<TextView>(R.id.tvCoordinates).visibility = View.GONE
 
-        activity.finish()   // единственный finish — здесь
+        activity.finish()
     }
 
     private fun typeFor(buttonId: Int): DangerType = when (buttonId) {
