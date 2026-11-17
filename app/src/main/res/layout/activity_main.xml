@@ -31,52 +31,53 @@
 
         <ImageButton
             android:id="@+id/btnMap"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginEnd="10dp"
-            android:padding="8dp"
-            android:background="@drawable/ic_map"
-            android:contentDescription="Карты"
-            app:tint="#333333" />
+            android:padding="10dp"
+            android:background="@drawable/bg_circle_button_map"
+            android:src="@drawable/ic_map"
+            android:contentDescription="Карты" />
 
         <ImageButton
             android:id="@+id/btnHazards"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginEnd="10dp"
-            android:padding="8dp"
-            android:background="@drawable/ic_hazard"
-            android:contentDescription="Опасные участки"
-            app:tint="#333333" />
+            android:padding="10dp"
+            android:background="@drawable/bg_circle_button_hazard"
+            android:src="@drawable/ic_hazard"
+            android:contentDescription="Опасные участки" />
 
         <ImageButton
             android:id="@+id/btnRoute"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginEnd="10dp"
-            android:padding="8dp"
-            android:background="@drawable/ic_route"
-            android:contentDescription="Маршрут"
-            app:tint="#333333" />
+            android:padding="10dp"
+            android:background="@drawable/bg_circle_button_history_and_route"
+            android:src="@drawable/ic_route"
+            android:contentDescription="Маршрут" />
 
         <ImageButton
             android:id="@+id/btnCloudy"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginEnd="10dp"
-            android:padding="8dp"
-            android:background="@drawable/ic_cloudy"
-            android:contentDescription="Погода"
-            app:tint="#333333" />
+            android:padding="10dp"
+            android:background="@drawable/bg_circle_button_cloudy"
+            android:src="@drawable/ic_cloudy"
+            android:contentDescription="Погода" />
 
         <ImageButton
             android:id="@+id/btnHistory"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
-            android:background="@drawable/ic_history"
-            android:contentDescription="История"
-            app:tint="#333333" />
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_circle_button_history_and_route"
+            android:src="@drawable/ic_history"
+            android:contentDescription="История" />
     </LinearLayout>
 
     <!-- Кнопка-триггер -->

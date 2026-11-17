@@ -71,7 +71,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:text="Мусор"
-                    app:icon="@drawable/ic_hazard" />
+                    app:icon="@drawable/trash" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardAnimals"
@@ -81,7 +81,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:text="Дикие животные"
-                    app:icon="@drawable/ic_hazard" />
+                    app:icon="@drawable/fauna" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardTrees"
@@ -90,7 +90,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:text="Поваленные деревья"
-                    app:icon="@drawable/ic_hazard" />
+                    app:icon="@drawable/forest_outlined" />
             </LinearLayout>
 
             <LinearLayout
@@ -107,7 +107,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:text="Продавины с водой"
-                    app:icon="@drawable/ic_hazard" />
+                    app:icon="@drawable/water_outlined" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardRocks"
@@ -117,7 +117,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:text="Камнепад"
-                    app:icon="@drawable/ic_hazard" />
+                    app:icon="@drawable/landslide_outlined" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnHazardFire"
@@ -126,7 +126,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:text="Риск пожара"
-                    app:icon="@drawable/ic_hazard" />
+                    app:icon="@drawable/warning" />
             </LinearLayout>
 
             <LinearLayout
