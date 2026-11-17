@@ -225,7 +225,7 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:text="Выбрать на карте"
                 android:textColor="#3D5C3A"
                 app:cornerRadius="12dp"
