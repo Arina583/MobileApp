@@ -23,10 +23,13 @@ import java.util.Locale
 
 class Hazard(private val activity: AppCompatActivity) {
 
+    // id выбранного типа опасности
     var selectedHazardId: Int? = null
         private set
 
+    // широта выбранной точки на карте
     var selectedLat: Double? = null
+    // долгота выбранной точки на карте
     var selectedLng: Double? = null
 
     var selectedUuid: String? = null
@@ -34,7 +37,8 @@ class Hazard(private val activity: AppCompatActivity) {
     // Репозиторий на SQLite: создаём один раз на жизнь экрана
     private val hazardRepository = HazardRepository(activity)
 
-    private val hazardButtonsGreen = listOf(
+    //список кнопок (id) типов опасности
+    private val hazardButtons = listOf(
         R.id.btnHazardGarbage,
         R.id.btnHazardAnimals,
         R.id.btnHazardTrees,
@@ -44,6 +48,8 @@ class Hazard(private val activity: AppCompatActivity) {
         R.id.btnHazardArea
     )
 
+    //Лаунчер экрана выбора точки на карте
+    //При успехе - сохранение координат и показ их на экране
     private val mapPickerLauncher = activity.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -58,8 +64,9 @@ class Hazard(private val activity: AppCompatActivity) {
         }
     }
 
+    //обработчики кнопок
     init {
-        hazardButtonsGreen.forEach { id ->
+        hazardButtons.forEach { id ->
             activity.findViewById<MaterialButton>(id).setOnClickListener { selectedHazard(id) }
         }
 
@@ -75,6 +82,7 @@ class Hazard(private val activity: AppCompatActivity) {
         activity.findViewById<View>(R.id.btnSubmit).setOnClickListener { submit() }
     }
 
+    //сохранение отметки об опасности
     private fun submit() {
         Log.w("Hazard", ">>> submit() вызван")   // контрольная точка (для проверки)
         val hazard = buildHazard()
@@ -93,6 +101,7 @@ class Hazard(private val activity: AppCompatActivity) {
         SyncManager.getInstance(activity).syncNow()
     }
 
+    //сбор модели Hazard из состояния формы
     private fun buildHazard(): Hazard? {
         val typeId = selectedHazardId ?: return null
 
@@ -114,17 +123,7 @@ class Hazard(private val activity: AppCompatActivity) {
         )
     }
 
-    private fun resetForm() {
-        hazardButtonsGreen.forEach { activity.findViewById<MaterialButton>(it).isSelected = false }
-        selectedHazardId = null
-        selectedLat = null
-        selectedLng = null
-        activity.findViewById<TextInputEditText>(R.id.etDescription).setText("")
-        activity.findViewById<TextView>(R.id.tvCoordinates).visibility = View.GONE
-
-        activity.finish()
-    }
-
+    //Сопоставление id кнопки типу опасности из DangerTypeRepository
     private fun typeFor(buttonId: Int): DangerType = when (buttonId) {
         R.id.btnHazardGarbage -> DangerTypeRepository.GARBAGE
         R.id.btnHazardAnimals -> DangerTypeRepository.ANIMALS
@@ -136,19 +135,36 @@ class Hazard(private val activity: AppCompatActivity) {
         else -> error("Неизвестная кнопка типа: $buttonId")
     }
 
+    //Обработка нажатия кнопки типа опасности
     private fun selectedHazard(id: Int) {
-        hazardButtonsGreen.forEach { activity.findViewById<MaterialButton>(it).isSelected = false }
+        hazardButtons.forEach { activity.findViewById<MaterialButton>(it).isSelected = false }
         activity.findViewById<MaterialButton>(id).isSelected = true
         selectedHazardId = id
     }
 
+    //Показ выбранной точки с координатами
     private fun showCoordinates(lat: Double, lng: Double) {
         val tv = activity.findViewById<TextView>(R.id.tvCoordinates)
         tv.text = String.format(Locale.US, "Выбранная точка: %.6f, %.6f", lat, lng)
         tv.visibility = View.VISIBLE
     }
 
+    //сброс формы в исходное состояние
+    //снимаем выделение с кнопок типа, очищается форма
+    private fun resetForm() {
+        hazardButtons.forEach { activity.findViewById<MaterialButton>(it).isSelected = false }
+        selectedHazardId = null
+        selectedLat = null
+        selectedLng = null
+        activity.findViewById<TextInputEditText>(R.id.etDescription).setText("")
+        activity.findViewById<TextView>(R.id.tvCoordinates).visibility = View.GONE
+
+        activity.finish()
+    }
+
+    //закрытие активности
     private fun backMap() {
+        Log.w("Hazard", ">>> backMap() выполняется")
         activity.finish()
     }
 }

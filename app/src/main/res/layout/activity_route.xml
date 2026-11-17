@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:fitsSystemWindows="true">
 
     <!-- Тулбар -->
     <ImageButton
@@ -22,14 +23,14 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
         android:text="Настройки маршрута"
         android:textColor="#1B1B1B"
         android:textSize="18sp"
         android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/btnBack"
-        app:layout_constraintStart_toEndOf="@id/btnBack"
-        app:layout_constraintTop_toTopOf="@id/btnBack"
         app:layout_constraintVertical_bias="0.0" />
 
     <ScrollView
@@ -67,7 +68,7 @@
                 <!-- Пешком (выбранная) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnModeWalk"
-                    style="@style/RouteModeButton.Selected"
+                    style="@style/RouteModeButton"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
