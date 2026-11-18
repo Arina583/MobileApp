@@ -8,6 +8,8 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+app/src/main/assets/trails.db
+app/src/main/assets/trailsNew.db
 .DS_Store
 /build
 /captures
