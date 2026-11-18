@@ -14,36 +14,35 @@ object AStar {
     fun findRoute(graph: TrailGraph, start: Int, goal: Int): Pair<Float, IntArray>? {
         val n = graph.nodeCount
         val gScore = FloatArray(n) { Float.POSITIVE_INFINITY }
-        val fScore = FloatArray(n) { Float.POSITIVE_INFINITY }
         val prev = IntArray(n) { -1 }
         val closed = BooleanArray(n)
-        val pq = PriorityQueue<Int>(compareBy { fScore[it] })
+
+        data class Entry(val node: Int, val f: Float)
+        val pq = PriorityQueue<Entry>(compareBy { it.f })
 
         gScore[start] = 0f
-        fScore[start] = heuristic(graph, start, goal)
-        pq.add(start)
+        pq.add(Entry(start, heuristic(graph, start, goal)))
 
         while (pq.isNotEmpty()) {
-            val cur = pq.poll()
-            if (cur == goal) break
+            val (cur, f) = pq.poll()
             if (closed[cur]) continue
+            if (f > gScore[cur] + heuristic(graph, cur, goal)) continue // устаревшая запись
             closed[cur] = true
+            if (cur == goal) break
 
             for (i in graph.neighborsOf(cur)) {
                 val next = graph.target(i)
                 val tentative = gScore[cur] + graph.weight(i)
                 if (tentative < gScore[next]) {
                     gScore[next] = tentative
-                    fScore[next] = tentative + heuristic(graph, next, goal)
                     prev[next] = cur
-                    pq.add(next)
+                    pq.add(Entry(next, tentative + heuristic(graph, next, goal)))
                 }
             }
         }
 
-        if (gScore[goal] == Float.POSITIVE_INFINITY) return null // маршрут не существует
+        if (gScore[goal] == Float.POSITIVE_INFINITY) return null
 
-        // восстановление пути
         val path = ArrayList<Int>()
         var node = goal
         while (node != -1) { path.add(node); node = prev[node] }

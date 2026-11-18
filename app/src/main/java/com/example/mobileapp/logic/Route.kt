@@ -231,6 +231,7 @@ class Route (private val activity: AppCompatActivity) {
         intent.putExtra(RouteMapActivity.EXTRA_START_LNG, startLng)
         intent.putExtra(RouteMapActivity.EXTRA_END_LAT, endLat)
         intent.putExtra(RouteMapActivity.EXTRA_END_LNG, endLng)
+        intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters.toDouble())
         activity.startActivity(intent)
     }
 

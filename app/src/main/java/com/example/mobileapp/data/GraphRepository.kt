@@ -2,6 +2,7 @@ package com.example.mobileapp.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import com.example.mobileapp.logic.TrailGraph
 import java.io.File
 
@@ -12,19 +13,19 @@ object GraphRepository {
     @Volatile
     private var graph: TrailGraph? = null
 
-    fun open (context: Context): SQLiteDatabase {
+    fun open(context: Context): SQLiteDatabase {
         db?.let { return it }
         val outFile = File(context.filesDir, DB_NAME)
-        if (!outFile.exists() || outFile.length() == 0L) {
-            context.assets.open(DB_NAME).use { input ->
-                outFile.outputStream().use { input.copyTo(it) }
-            }
+
+        context.assets.open(DB_NAME).use { input ->
+            outFile.outputStream().use { input.copyTo(it) }
         }
-        db = SQLiteDatabase.openDatabase(
-            outFile.path, null, SQLiteDatabase.OPEN_READWRITE
-        )
+        Log.d("GraphRepository", "База скопирована из assets: ${outFile.length()} байт")
+
+        db = SQLiteDatabase.openDatabase(outFile.path, null, SQLiteDatabase.OPEN_READWRITE)
         return db!!
     }
+
 
     /**
      * Возвращает граф, загружая его из базы один раз за жизнь процесса.
