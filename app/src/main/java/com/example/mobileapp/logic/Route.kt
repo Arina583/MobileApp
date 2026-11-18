@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.activity.MapPickerActivity
+import com.example.mobileapp.activity.RouteMapActivity
 import com.example.mobileapp.data.DangerTypeRepository
 import com.example.mobileapp.data.GraphRepository
 import com.example.mobileapp.data.RouteResult
@@ -215,65 +216,22 @@ class Route (private val activity: AppCompatActivity) {
                     Toast.makeText(activity, "Точки слишком близко друг к другу", Toast.LENGTH_SHORT).show()
                 else -> {
                     Log.d("Route", "Найден маршрут: ${"%.0f".format(result.distanceMeters)} м, точек: ${result.points.size}")
-                    drawRouteOnMap(result)
+                    openRouteMap(result)
                 }
             }
         }
     }
 
-    private var routeOverlay: Polyline? = null
-    private var startMarker: Marker? = null
-    private var endMarker: Marker? = null
-
-    private fun drawRouteOnMap(result: RouteResult) {
-        val mapView = activity.findViewById<MapView>(R.id.mapView2)
-        val points = result.points.map { GeoPoint(it.first, it.second) }
-
-        // убираем прошлый маршрут, если он был
-        routeOverlay?.let { mapView.overlays.remove(it) }
-        startMarker?.let { mapView.overlays.remove(it) }
-        endMarker?.let { mapView.overlays.remove(it) }
-
-        val polyline = Polyline(mapView)
-        polyline.setPoints(points)
-        polyline.outlinePaint.apply {
-            color = Color.parseColor("#E53935")
-            strokeWidth = 8f
-            strokeCap = Paint.Cap.ROUND
-            strokeJoin = Paint.Join.ROUND
-        }
-        mapView.overlays.add(polyline)
-        routeOverlay = polyline
-
-        // маркеры начала и конца
-        startMarker = addPointMarker(mapView, points.first(), Color.parseColor("#2E7D32"))
-        endMarker = addPointMarker(mapView, points.last(), Color.parseColor("#C62828"))
-
-        // масштабируем карту так, чтобы весь маршрут был виден
-        val bounds = BoundingBox.fromGeoPoints(points)
-            .increaseByScale(1.25f)
-        mapView.post {
-            mapView.zoomToBoundingBox(bounds, false, 40)
-            mapView.invalidate()
-        }
-    }
-
-    private fun addPointMarker(mapView: MapView, point: GeoPoint, color: Int): Marker {
-        val marker = Marker(mapView)
-        marker.position = point
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        marker.icon = makeCircleIcon(mapView.context, color)
-        mapView.overlays.add(marker)
-        return marker
-    }
-
-    private fun makeCircleIcon(context: Context, color: Int): Drawable {
-        val size = 24
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(bitmap)
-        val paint = Paint().apply { this.color = color; isAntiAlias = true }
-        canvas.drawCircle(size / 2f, size / 2f, size / 3f, paint)
-        return BitmapDrawable(context.resources, bitmap)
+    private fun openRouteMap(result: RouteResult) {
+        val intent = Intent(activity, RouteMapActivity::class.java)
+        intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LAT, DoubleArray(result.points.size) { result.points[it].first })
+        intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LNG, DoubleArray(result.points.size) { result.points[it].second })
+        intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters)
+        intent.putExtra(RouteMapActivity.EXTRA_START_LAT, startLat)
+        intent.putExtra(RouteMapActivity.EXTRA_START_LNG, startLng)
+        intent.putExtra(RouteMapActivity.EXTRA_END_LAT, endLat)
+        intent.putExtra(RouteMapActivity.EXTRA_END_LNG, endLng)
+        activity.startActivity(intent)
     }
 
 

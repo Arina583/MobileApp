@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.preference.ktx)
     implementation(libs.material)
     implementation(libs.play.services.maps)
     testImplementation(libs.junit)
