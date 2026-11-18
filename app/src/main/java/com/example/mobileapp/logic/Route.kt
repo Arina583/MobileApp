@@ -47,6 +47,12 @@ class Route (private val activity: AppCompatActivity) {
     // долгота выбранной точки на карте
     var selectedLng: Double? = null
 
+    //  Отдельно начало и конец
+    var startLat: Double? = null
+    var startLng: Double? = null
+    var endLat: Double? = null
+    var endLng: Double? = null
+
     //список кнопок (id) типов передвижения
     private val routeButtons = listOf(
         R.id.btnModeWalk,
@@ -105,13 +111,6 @@ class Route (private val activity: AppCompatActivity) {
         }
     }
 
-    //  Отдельно начало и конец
-    var startLat: Double? = null
-    var startLng: Double? = null
-    var endLat: Double? = null
-    var endLng: Double? = null
-
-
     //Показ выбранной начальной точки с координатами
     private fun showStartCoordinates(lat: Double, lng: Double) {
         startLat = lat
@@ -135,6 +134,14 @@ class Route (private val activity: AppCompatActivity) {
         selectedRouteId = id
     }
 
+    // Режим графа по выбранной кнопке; null — если ничего не выбрано
+    private fun selectedMode(): Int? = when (selectedRouteId) {
+        R.id.btnModeWalk -> TrailGraph.MODE_WALK
+        R.id.btnModeBike -> TrailGraph.MODE_BIKE
+        R.id.btnModeCar -> TrailGraph.MODE_CAR
+        else -> null
+    }
+
     //Валидация координат
     private fun hasValidCoordinates(): Boolean {
         return startLat != null && startLng != null && endLat != null && endLng != null
@@ -154,24 +161,6 @@ class Route (private val activity: AppCompatActivity) {
         }
     }
 
-    private fun performRouteCalculation(startLat: Double, startLng: Double, endLat: Double, endLng: Double) {
-        // Пока просто заглушка (показываем что маршрут построен)
-
-        Toast.makeText(
-            activity,
-            "Маршрут построен: от ($startLat, $startLng) до ($endLat, $endLng)",
-            Toast.LENGTH_LONG
-        ).show()
-
-        // Пример (переход на экран с картой и линией маршрута)
-        val intent = Intent(activity, MainActivity::class.java) // или отдельный Activity/Fragment для карты
-        intent.putExtra("route_start_lat", startLat)
-        intent.putExtra("route_start_lng", startLng)
-        intent.putExtra("route_end_lat", endLat)
-        intent.putExtra("route_end_lng", endLng)
-        activity.startActivity(intent)
-    }
-
     private fun setRouteControlsEnabled(enabled: Boolean) {
         activity.findViewById<View>(R.id.btnBuildRoute).isEnabled = enabled
     }
@@ -180,6 +169,11 @@ class Route (private val activity: AppCompatActivity) {
     private fun buildRoute() {
         if (!hasValidCoordinates()) {
             Toast.makeText(activity, "Выберите обе точки маршрута", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val mode = selectedMode() ?: run {
+            Toast.makeText(activity, "Выберите тип передвижения", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -204,7 +198,7 @@ class Route (private val activity: AppCompatActivity) {
 
             val result: RouteResult? = withContext(Dispatchers.IO) {
                 val graph = GraphRepository.openGraph(activity.applicationContext)
-                RouteBuilder.buildRoute(graph, startLat, startLng, endLat, endLng)
+                RouteBuilder.buildRoute(graph, mode,startLat, startLng, endLat, endLng)
             }
 
             setRouteControlsEnabled(true)
@@ -226,7 +220,7 @@ class Route (private val activity: AppCompatActivity) {
         val intent = Intent(activity, RouteMapActivity::class.java)
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LAT, DoubleArray(result.points.size) { result.points[it].first })
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LNG, DoubleArray(result.points.size) { result.points[it].second })
-        intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters)
+        intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters.toDouble())
         intent.putExtra(RouteMapActivity.EXTRA_START_LAT, startLat)
         intent.putExtra(RouteMapActivity.EXTRA_START_LNG, startLng)
         intent.putExtra(RouteMapActivity.EXTRA_END_LAT, endLat)

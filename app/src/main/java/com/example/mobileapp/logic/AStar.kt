@@ -11,7 +11,8 @@ object AStar {
 
     private const val EARTH_R = 6371000.0
 
-    fun findRoute(graph: TrailGraph, start: Int, goal: Int): Pair<Float, IntArray>? {
+    /** Возвращает (время в секундах, путь по индексам узлов) или null, если пути нет. */
+    fun findRoute(graph: TrailGraph, mode: Int, start: Int, goal: Int): Pair<Float, IntArray>? {
         val n = graph.nodeCount
         val gScore = FloatArray(n) { Float.POSITIVE_INFINITY }
         val prev = IntArray(n) { -1 }
@@ -24,15 +25,14 @@ object AStar {
         pq.add(Entry(start, heuristic(graph, start, goal)))
 
         while (pq.isNotEmpty()) {
-            val (cur, f) = pq.poll()
-            if (closed[cur]) continue
-            if (f > gScore[cur] + heuristic(graph, cur, goal)) continue // устаревшая запись
-            closed[cur] = true
+            val cur = pq.poll().node
+            if (closed[cur]) continue   // устаревшие записи узла отсекаются здесь:
+            closed[cur] = true          // лучший его экземпляр всплывает первым
             if (cur == goal) break
 
-            for (i in graph.neighborsOf(cur)) {
-                val next = graph.target(i)
-                val tentative = gScore[cur] + graph.weight(i)
+            for (i in graph.neighborsOf(mode, cur)) {
+                val next = graph.target(mode, i)
+                val tentative = gScore[cur] + graph.weight(mode, i)
                 if (tentative < gScore[next]) {
                     gScore[next] = tentative
                     prev[next] = cur

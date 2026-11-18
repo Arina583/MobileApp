@@ -7,7 +7,7 @@ import com.example.mobileapp.logic.TrailGraph
 import java.io.File
 
 object GraphRepository {
-    private const val DB_NAME = "trails.db"
+    private const val DB_NAME = "trailsNew.db"
     private var db: SQLiteDatabase? = null
 
     @Volatile
