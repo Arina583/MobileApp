@@ -64,6 +64,14 @@
                 android:textColor="#5A5A5A"
                 android:textSize="14sp"
                 tools:text="Точек в маршруте: 128" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStartRoute"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="Запустить маршрут" />
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
