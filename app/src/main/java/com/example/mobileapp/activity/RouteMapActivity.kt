@@ -14,6 +14,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -30,6 +31,11 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class RouteMapActivity : AppCompatActivity() {
 
@@ -41,6 +47,7 @@ class RouteMapActivity : AppCompatActivity() {
         const val EXTRA_START_LNG = "route_start_lng"
         const val EXTRA_END_LAT = "route_end_lat"
         const val EXTRA_END_LNG = "route_end_lng"
+        const val EXTRA_MODE = "route_mode" // 0=пешком, 1=вело, 2=машина
     }
 
     private lateinit var mapView: MapView
@@ -56,6 +63,29 @@ class RouteMapActivity : AppCompatActivity() {
     private var arrowMarker: Marker? = null
     private var lastBearing = 0f
     private lateinit var locationManager: LocationManager
+
+    // Состояния экрана
+    private lateinit var cardBanner: View
+    private lateinit var cardRouteInfo: View
+    private lateinit var cardNavigation: View
+    private lateinit var tvManeuverText: TextView
+    private lateinit var tvManeuverDistance: TextView
+    private lateinit var tvTimeLeft: TextView
+    private lateinit var tvDistanceLeft: TextView
+
+    // Геометрия маршрута для расчёта прогресса
+    private var routePoints: Array<GeoPoint> = emptyArray()
+    private var cumulativeDist = floatArrayOf() // метры от старта до точки i
+    private var totalDistance = 0.0
+    private var mode = 0 // 0=пешком, 1=вело, 2=машина
+
+    // Средние скорости режимов, м/с (для оценки оставшегося времени)
+    private val avgSpeed: Double
+        get() = when (mode) {
+            1 -> 4.0   // вело ~14 км/ч
+            2 -> 15.0  // авто ~54 км/ч
+            else -> 1.39 // пешком 5 км/ч
+        }
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -73,12 +103,23 @@ class RouteMapActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_route_map)
 
+        cardBanner = findViewById(R.id.cardBanner)
+        cardRouteInfo = findViewById(R.id.cardRouteInfo)
+        cardNavigation = findViewById(R.id.cardNavigation)
+        tvManeuverText = findViewById(R.id.tvManeuverText)
+        tvManeuverDistance = findViewById(R.id.tvManeuverDistance)
+        tvTimeLeft = findViewById(R.id.tvTimeLeft)
+        tvDistanceLeft = findViewById(R.id.tvDistanceLeft)
+
+        findViewById<ImageButton>(R.id.btnCloseBanner).setOnClickListener { stopTracking() }
+        findViewById<MaterialButton>(R.id.btnFinishRoute).setOnClickListener { stopTracking() }
+
         mapView = findViewById(R.id.mapViewRoute)
         mapApi = MapApi(this)
 
         mapApi.setupMap(mapView)
         mapController = mapView.controller
-        mapApi.showHazards(mapView)       // и опасные участки
+        mapApi.showHazards(mapView)
 
         findViewById<MaterialButton>(R.id.btnStartRoute).setOnClickListener {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -88,6 +129,9 @@ class RouteMapActivity : AppCompatActivity() {
             } else {
                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
+            cardRouteInfo.visibility = View.GONE
+            cardNavigation.visibility = View.VISIBLE
+            cardBanner.visibility = View.VISIBLE
         }
 
         SyncManager.getInstance(this).syncNow {
@@ -97,6 +141,7 @@ class RouteMapActivity : AppCompatActivity() {
         val latArray = intent.getDoubleArrayExtra(EXTRA_ROUTE_LAT) ?: doubleArrayOf()
         val lngArray = intent.getDoubleArrayExtra(EXTRA_ROUTE_LNG) ?: doubleArrayOf()
         val distanceMeters = intent.getDoubleExtra(EXTRA_DISTANCE, 0.0)
+        mode = intent.getIntExtra(EXTRA_MODE, 0)
 
         startLat = intent.getDoubleExtra(
             EXTRA_START_LAT, if (latArray.isNotEmpty()) latArray.first() else 0.0
@@ -120,18 +165,30 @@ class RouteMapActivity : AppCompatActivity() {
 
     private fun drawRoute(lats: DoubleArray, lngs: DoubleArray) {
         val points = lats.zip(lngs) { lat, lng -> GeoPoint(lat, lng) }
+        routePoints = points.toTypedArray()
+
+        // накопленные расстояния от старта — для расчёта «осталось»
+        cumulativeDist = FloatArray(points.size)
+        for (i in 1 until points.size) {
+            cumulativeDist[i] = cumulativeDist[i - 1] +
+                    haversine(
+                        points[i - 1].latitude, points[i - 1].longitude,
+                        points[i].latitude, points[i].longitude
+                    ).toFloat()
+        }
+        totalDistance = cumulativeDist.lastOrNull()?.toDouble() ?: 0.0
 
         val polyline = Polyline(mapView)
         polyline.setPoints(points)
         polyline.outlinePaint.apply {
-            color = Color.parseColor("#E53935")
-            strokeWidth = 8f
+            color = Color.parseColor("#1E6FE0")   // синяя линия, как в макете
+            strokeWidth = 12f
             strokeCap = Paint.Cap.ROUND
             strokeJoin = Paint.Join.ROUND
         }
         mapView.overlays.add(polyline)
 
-        // маркеры начала и конца — те же цвета, что и на экране настроек
+        // маркеры начала и конца
         addPointMarker(mapView, points.first(), Color.parseColor("#2E7D32"))
         addPointMarker(mapView, points.last(), Color.parseColor("#C62828"))
 
@@ -167,6 +224,13 @@ class RouteMapActivity : AppCompatActivity() {
         } else {
             String.format(java.util.Locale.US, "%.0f м", meters)
         }
+    }
+
+    private fun formatTime(seconds: Double): String {
+        val totalMin = (seconds / 60).toInt()
+        val h = totalMin / 60
+        val m = totalMin % 60
+        return if (h > 0) "${h}ч $m мин" else "$m мин"
     }
 
     private fun startLocationUpdates() {
@@ -206,7 +270,95 @@ class RouteMapActivity : AppCompatActivity() {
         }
         marker.position = pos
         mapController.animateTo(pos)
+
+        updateProgress(loc)
         mapView.invalidate()
+    }
+
+    /**
+     * Прогресс по маршруту: ближайшая точка, осталось метров/минут, манёвр впереди.
+     */
+    private fun updateProgress(loc: Location) {
+        if (routePoints.size < 2) return
+
+        // ближайшая точка маршрута (линейный поиск; при 1 Гц это дёшево)
+        var best = 0
+        var bestD = Double.MAX_VALUE
+        for (i in routePoints.indices) {
+            val d = haversine(loc.latitude, loc.longitude,
+                routePoints[i].latitude, routePoints[i].longitude)
+            if (d < bestD) { bestD = d; best = i }
+        }
+
+        val passed = cumulativeDist[best].toDouble()
+        val remaining = (totalDistance - passed).coerceAtLeast(0.0)
+        val remainingSec = remaining / avgSpeed
+
+        tvDistanceLeft.text = "Осталось ${formatDistance(remaining)}"
+        tvTimeLeft.text = formatTime(remainingSec)
+
+        // манёвр: смотрим на участок впереди, ищем заметный поворот
+        tvManeuverText.text = maneuverAhead(best)
+        tvManeuverDistance.text = "Ещё ${formatDistance(remaining)}"
+    }
+
+    /**
+     * Текст манёвра: идём вперёд по маршруту, пока направление не изменится заметно.
+     */
+    private fun maneuverAhead(idx: Int): String {
+        val n = routePoints.size
+        if (idx >= n - 2) return "Вы на месте"
+
+        val a = routePoints[idx]
+        var j = idx + 1
+        // пропускаем почти нулевые участки
+        while (j < n - 1 &&
+            haversine(routePoints[j - 1].latitude, routePoints[j - 1].longitude,
+                routePoints[j].latitude, routePoints[j].longitude) < 5.0) {
+            j++
+        }
+        val b = routePoints[j]
+        val c = routePoints[minOf(j + 1, n - 1)]
+
+        // азимуты участков
+        val brg1 = bearingDeg(a, b)
+        val brg2 = bearingDeg(b, c)
+        var delta = brg2 - brg1
+        while (delta > 180) delta -= 360
+        while (delta < -180) delta += 360
+
+        return when {
+            abs(delta) < 30 -> "Идите прямо"
+            delta > 0 -> if (abs(delta) > 120) "Резко направо" else "Поверните направо"
+            else -> if (abs(delta) > 120) "Резко налево" else "Поверните налево"
+        }
+    }
+
+    private fun bearingDeg(a: GeoPoint, b: GeoPoint): Double {
+        val la1 = Math.toRadians(a.latitude)
+        val la2 = Math.toRadians(b.latitude)
+        val dLon = Math.toRadians(b.longitude - a.longitude)
+        val y = sin(dLon) * cos(la2)
+        val x = cos(la1) * sin(la2) - sin(la1) * cos(la2) * cos(dLon)
+        return Math.toDegrees(atan2(y, x))
+    }
+
+    private fun stopTracking() {
+        tracking = false
+        if (::locationManager.isInitialized) locationManager.removeUpdates(locationListener)
+        cardNavigation.visibility = View.GONE
+        cardBanner.visibility = View.GONE
+        cardRouteInfo.visibility = View.VISIBLE
+    }
+
+    private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371000.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 
     private fun makeArrowIcon(bearing: Float): BitmapDrawable {

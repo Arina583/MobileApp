@@ -210,22 +210,29 @@ class Route (private val activity: AppCompatActivity) {
                     Toast.makeText(activity, "Точки слишком близко друг к другу", Toast.LENGTH_SHORT).show()
                 else -> {
                     Log.d("Route", "Найден маршрут: ${"%.0f".format(result.distanceMeters)} м, точек: ${result.points.size}")
-                    openRouteMap(result)
+                    openRouteMap(result, mode, startLat, startLng, endLat, endLng)
                 }
             }
         }
     }
 
-    private fun openRouteMap(result: RouteResult) {
+    private fun openRouteMap(
+        result: RouteResult,
+        mode: Int,
+        sLat: Double,
+        sLng: Double,
+        eLat: Double,
+        eLng: Double
+    ) {
         val intent = Intent(activity, RouteMapActivity::class.java)
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LAT, DoubleArray(result.points.size) { result.points[it].first })
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LNG, DoubleArray(result.points.size) { result.points[it].second })
         intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters.toDouble())
-        intent.putExtra(RouteMapActivity.EXTRA_START_LAT, startLat)
-        intent.putExtra(RouteMapActivity.EXTRA_START_LNG, startLng)
-        intent.putExtra(RouteMapActivity.EXTRA_END_LAT, endLat)
-        intent.putExtra(RouteMapActivity.EXTRA_END_LNG, endLng)
-        intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters.toDouble())
+        intent.putExtra(RouteMapActivity.EXTRA_MODE, mode)
+        intent.putExtra(RouteMapActivity.EXTRA_START_LAT, sLat)
+        intent.putExtra(RouteMapActivity.EXTRA_START_LNG, sLng)
+        intent.putExtra(RouteMapActivity.EXTRA_END_LAT, eLat)
+        intent.putExtra(RouteMapActivity.EXTRA_END_LNG, eLng)
         activity.startActivity(intent)
     }
 

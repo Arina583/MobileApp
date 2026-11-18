@@ -27,16 +27,88 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Карточка с информацией о маршруте -->
+    <!-- ===== Верхний баннер с манёвром (виден только во время навигации) ===== -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBanner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="#9BA17B"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="#B0B690"
+        app:strokeWidth="1dp"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:paddingVertical="12dp">
+
+            <TextView
+                android:id="@+id/tvManeuverIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
+                android:text="⬆"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvManeuverText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    tools:text="Идите прямо" />
+
+                <TextView
+                    android:id="@+id/tvManeuverDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#E8EADF"
+                    android:textSize="14sp"
+                    tools:text="Еще 320 м" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnCloseBanner"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Закрыть"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#FFFFFF" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ===== Карточка «маршрут построен» (до старта) ===== -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardRouteInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginHorizontal="0dp"
+        android:layout_marginBottom="0dp"
         app:cardBackgroundColor="#FFFFFF"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -69,8 +141,74 @@
                 android:id="@+id/btnStartRoute"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:text="Запустить маршрут" />
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#6750A4"
+                android:text="Запустить маршрут"
+                app:cornerRadius="28dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ===== Карточка навигации (во время движения) ===== -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardNavigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp">
+
+            <!-- ручка-перетаскиватель, как в макете -->
+            <View
+                android:layout_width="44dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_drag_handle" />
+
+            <TextView
+                android:id="@+id/tvTimeLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#1B1B1B"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                tools:text="1ч 32 мин" />
+
+            <TextView
+                android:id="@+id/tvDistanceLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="#8A8A8A"
+                android:textSize="15sp"
+                tools:text="Осталось 9,4 км" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFinishRoute"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Завершить маршрут"
+                android:textColor="#C62828"
+                app:cornerRadius="28dp"
+                app:strokeColor="#C62828"
+                app:strokeWidth="1.5dp" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
