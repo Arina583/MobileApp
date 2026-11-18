@@ -1,7 +1,13 @@
 package com.example.mobileapp.logic
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
@@ -9,13 +15,24 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.activity.MapPickerActivity
 import com.example.mobileapp.data.DangerTypeRepository
+import com.example.mobileapp.data.GraphRepository
+import com.example.mobileapp.data.RouteResult
 import com.example.mobileapp.models.DangerType
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.osmdroid.util.BoundingBox
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import java.util.Locale
 
 class Route (private val activity: AppCompatActivity) {
@@ -154,6 +171,10 @@ class Route (private val activity: AppCompatActivity) {
         activity.startActivity(intent)
     }
 
+    private fun setRouteControlsEnabled(enabled: Boolean) {
+        activity.findViewById<View>(R.id.btnBuildRoute).isEnabled = enabled
+    }
+
     //Построение маршрута
     private fun buildRoute() {
         if (!hasValidCoordinates()) {
@@ -175,8 +196,86 @@ class Route (private val activity: AppCompatActivity) {
         }
 
         Log.d("Route", "Строим маршрут: [$startLat, $startLng] -> [$endLat, $endLng]")
-        performRouteCalculation(startLat, startLng, endLat, endLng)
+
+        activity.lifecycleScope.launch(Dispatchers.Main) {
+            // блокируем кнопку, чтобы не запустить расчёт дважды
+            setRouteControlsEnabled(false)
+
+            val result: RouteResult? = withContext(Dispatchers.IO) {
+                val graph = GraphRepository.openGraph(activity.applicationContext)
+                RouteBuilder.buildRoute(graph, startLat, startLng, endLat, endLng)
+            }
+
+            setRouteControlsEnabled(true)
+
+            when {
+                result == null ->
+                    Toast.makeText(activity, "Маршрут не проложен: точки не связаны сетью троп", Toast.LENGTH_LONG).show()
+                result.points.size < 2 ->
+                    Toast.makeText(activity, "Точки слишком близко друг к другу", Toast.LENGTH_SHORT).show()
+                else -> {
+                    Log.d("Route", "Найден маршрут: ${"%.0f".format(result.distanceMeters)} м, точек: ${result.points.size}")
+                    drawRouteOnMap(result)
+                }
+            }
+        }
     }
+
+    private var routeOverlay: Polyline? = null
+    private var startMarker: Marker? = null
+    private var endMarker: Marker? = null
+
+    private fun drawRouteOnMap(result: RouteResult) {
+        val mapView = activity.findViewById<MapView>(R.id.mapView2)
+        val points = result.points.map { GeoPoint(it.first, it.second) }
+
+        // убираем прошлый маршрут, если он был
+        routeOverlay?.let { mapView.overlays.remove(it) }
+        startMarker?.let { mapView.overlays.remove(it) }
+        endMarker?.let { mapView.overlays.remove(it) }
+
+        val polyline = Polyline(mapView)
+        polyline.setPoints(points)
+        polyline.outlinePaint.apply {
+            color = Color.parseColor("#E53935")
+            strokeWidth = 8f
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+        }
+        mapView.overlays.add(polyline)
+        routeOverlay = polyline
+
+        // маркеры начала и конца
+        startMarker = addPointMarker(mapView, points.first(), Color.parseColor("#2E7D32"))
+        endMarker = addPointMarker(mapView, points.last(), Color.parseColor("#C62828"))
+
+        // масштабируем карту так, чтобы весь маршрут был виден
+        val bounds = BoundingBox.fromGeoPoints(points)
+            .increaseByScale(1.25f)
+        mapView.post {
+            mapView.zoomToBoundingBox(bounds, false, 40)
+            mapView.invalidate()
+        }
+    }
+
+    private fun addPointMarker(mapView: MapView, point: GeoPoint, color: Int): Marker {
+        val marker = Marker(mapView)
+        marker.position = point
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        marker.icon = makeCircleIcon(mapView.context, color)
+        mapView.overlays.add(marker)
+        return marker
+    }
+
+    private fun makeCircleIcon(context: Context, color: Int): Drawable {
+        val size = 24
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+        val paint = Paint().apply { this.color = color; isAntiAlias = true }
+        canvas.drawCircle(size / 2f, size / 2f, size / 3f, paint)
+        return BitmapDrawable(context.resources, bitmap)
+    }
+
 
     //сброс формы в исходное состояние
     private fun resetForm() {
