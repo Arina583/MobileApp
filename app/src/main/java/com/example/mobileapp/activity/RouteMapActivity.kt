@@ -71,7 +71,6 @@ class RouteMapActivity : AppCompatActivity() {
 
     // Состояния экрана
     private lateinit var cardBanner: View
-    private lateinit var cardRouteInfo: View
     private lateinit var cardNavigation: View
     private lateinit var tvManeuverText: TextView
     private lateinit var tvManeuverDistance: TextView
@@ -109,7 +108,6 @@ class RouteMapActivity : AppCompatActivity() {
         setContentView(R.layout.activity_route_map)
 
         cardBanner = findViewById(R.id.cardBanner)
-        cardRouteInfo = findViewById(R.id.cardRouteInfo)
         cardNavigation = findViewById(R.id.cardNavigation)
         tvManeuverText = findViewById(R.id.tvManeuverText)
         tvManeuverDistance = findViewById(R.id.tvManeuverDistance)
@@ -126,26 +124,13 @@ class RouteMapActivity : AppCompatActivity() {
         mapController = mapView.controller
         mapApi.showHazards(mapView)
 
-        findViewById<MaterialButton>(R.id.btnStartRoute).setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED
-            ) {
-                startLocationUpdates()
-            } else {
-                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
-            cardRouteInfo.visibility = View.GONE
-            cardNavigation.visibility = View.VISIBLE
-            cardBanner.visibility = View.VISIBLE
-        }
-
+        // Синхронизация: при обновлении данных перерисовать опасности
         SyncManager.getInstance(this).syncNow {
             runOnUiThread { mapApi.showHazards(mapView) }
         }
 
         val latArray = intent.getDoubleArrayExtra(EXTRA_ROUTE_LAT) ?: doubleArrayOf()
         val lngArray = intent.getDoubleArrayExtra(EXTRA_ROUTE_LNG) ?: doubleArrayOf()
-        val distanceMeters = intent.getDoubleExtra(EXTRA_DISTANCE, 0.0)
         mode = intent.getIntExtra(EXTRA_MODE, 0)
 
         startLat = intent.getDoubleExtra(
@@ -155,16 +140,20 @@ class RouteMapActivity : AppCompatActivity() {
             EXTRA_START_LNG, if (lngArray.isNotEmpty()) lngArray.first() else 0.0
         )
 
-        val tvDistance = findViewById<TextView>(R.id.tvRouteDistance)
-        val tvPoints = findViewById<TextView>(R.id.tvRoutePoints)
-
-        tvDistance.text = "Длина маршрута: " + formatDistance(distanceMeters)
-        tvPoints.text = "Точек в маршруте: ${latArray.size}"
-
-        val startTail = intent.getFloatExtra(EXTRA_TAIL_START, 0f)
-        val endTail = intent.getFloatExtra(EXTRA_TAIL_END, 0f)
+        // Экран всегда открывается в режиме навигации
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            startLocationUpdates()
+        } else {
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        cardNavigation.visibility = View.VISIBLE
+        cardBanner.visibility = View.VISIBLE
 
         if (latArray.size >= 2 && latArray.size == lngArray.size) {
+            val startTail = intent.getFloatExtra(EXTRA_TAIL_START, 0f)
+            val endTail = intent.getFloatExtra(EXTRA_TAIL_END, 0f)
             drawRoute(latArray, lngArray, startTail, endTail)
         }
 
@@ -379,9 +368,7 @@ class RouteMapActivity : AppCompatActivity() {
     private fun stopTracking() {
         tracking = false
         if (::locationManager.isInitialized) locationManager.removeUpdates(locationListener)
-        cardNavigation.visibility = View.GONE
-        cardBanner.visibility = View.GONE
-        cardRouteInfo.visibility = View.VISIBLE
+        finish()
     }
 
     private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {

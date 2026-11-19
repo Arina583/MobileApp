@@ -53,6 +53,9 @@
         <activity
             android:name=".activity.RouteMapActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.RouteStartActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

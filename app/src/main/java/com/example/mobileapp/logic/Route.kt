@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mobileapp.R
 import com.example.mobileapp.activity.MapPickerActivity
 import com.example.mobileapp.activity.RouteMapActivity
+import com.example.mobileapp.activity.RouteStartActivity
 import com.example.mobileapp.data.GraphRepository
 import com.example.mobileapp.data.RouteResult
 import com.google.android.material.button.MaterialButton
@@ -209,7 +210,7 @@ class Route (private val activity: AppCompatActivity) {
         eLat: Double,
         eLng: Double
     ) {
-        val intent = Intent(activity, RouteMapActivity::class.java)
+        val intent = Intent(activity, RouteStartActivity::class.java)
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LAT, DoubleArray(result.points.size) { result.points[it].first })
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LNG, DoubleArray(result.points.size) { result.points[it].second })
         intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters.toDouble())
