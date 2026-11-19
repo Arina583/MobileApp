@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
@@ -48,6 +49,10 @@ class RouteMapActivity : AppCompatActivity() {
         const val EXTRA_END_LAT = "route_end_lat"
         const val EXTRA_END_LNG = "route_end_lng"
         const val EXTRA_MODE = "route_mode" // 0=пешком, 1=вело, 2=машина
+
+        // Для пунктира (если маршрут выходит за граф)
+        const val EXTRA_TAIL_START = "route_tail_start_m"
+        const val EXTRA_TAIL_END = "route_tail_end_m"
     }
 
     private lateinit var mapView: MapView
@@ -156,14 +161,17 @@ class RouteMapActivity : AppCompatActivity() {
         tvDistance.text = "Длина маршрута: " + formatDistance(distanceMeters)
         tvPoints.text = "Точек в маршруте: ${latArray.size}"
 
+        val startTail = intent.getFloatExtra(EXTRA_TAIL_START, 0f)
+        val endTail = intent.getFloatExtra(EXTRA_TAIL_END, 0f)
+
         if (latArray.size >= 2 && latArray.size == lngArray.size) {
-            drawRoute(latArray, lngArray)
+            drawRoute(latArray, lngArray, startTail, endTail)
         }
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
     }
 
-    private fun drawRoute(lats: DoubleArray, lngs: DoubleArray) {
+    private fun drawRoute(lats: DoubleArray, lngs: DoubleArray, startTail: Float, endTail: Float) {
         val points = lats.zip(lngs) { lat, lng -> GeoPoint(lat, lng) }
         routePoints = points.toTypedArray()
 
@@ -178,15 +186,27 @@ class RouteMapActivity : AppCompatActivity() {
         }
         totalDistance = cumulativeDist.lastOrNull()?.toDouble() ?: 0.0
 
-        val polyline = Polyline(mapView)
-        polyline.setPoints(points)
-        polyline.outlinePaint.apply {
-            color = Color.parseColor("#1E6FE0")   // синяя линия, как в макете
-            strokeWidth = 12f
-            strokeCap = Paint.Cap.ROUND
-            strokeJoin = Paint.Join.ROUND
+        // индексы, с которых начинается/заканчивается «внеграфовая» часть
+        val firstSolid = if (startTail > 0 && points.size >= 2) 1 else 0
+        val lastSolid = if (endTail > 0 && points.size >= 2) points.size - 2 else points.size - 1
+
+        // сплошная линия — только по графу
+        if (lastSolid > firstSolid) {
+            val solid = Polyline(mapView)
+            solid.setPoints(points.subList(firstSolid, lastSolid + 1))
+            solid.outlinePaint.apply {
+                color = Color.parseColor("#1E6FE0")
+                strokeWidth = 12f
+                strokeCap = Paint.Cap.ROUND
+                strokeJoin = Paint.Join.ROUND
+            }
+            mapView.overlays.add(solid)
         }
-        mapView.overlays.add(polyline)
+
+        // пунктирные хвосты — путь вне дороги
+        val dash = DashPathEffect(floatArrayOf(24f, 18f), 0f)
+        if (startTail > 0) addDashed(points.subList(0, firstSolid + 1), dash)
+        if (endTail > 0) addDashed(points.subList(lastSolid, points.size), dash)
 
         // маркеры начала и конца
         addPointMarker(mapView, points.first(), Color.parseColor("#2E7D32"))
@@ -198,6 +218,19 @@ class RouteMapActivity : AppCompatActivity() {
             mapView.zoomToBoundingBox(bounds, false, 40)
             mapView.invalidate()
         }
+    }
+
+    private fun addDashed(points: List<GeoPoint>, dash: DashPathEffect) {
+        val line = Polyline(mapView)
+        line.setPoints(points)
+        line.outlinePaint.apply {
+            color = Color.parseColor("#1E6FE0")
+            strokeWidth = 12f
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            pathEffect = dash
+        }
+        mapView.overlays.add(line)
     }
 
     private fun addPointMarker(mapView: MapView, point: GeoPoint, color: Int): Marker {

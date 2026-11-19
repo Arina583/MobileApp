@@ -1,39 +1,24 @@
 package com.example.mobileapp.logic
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.mobileapp.MainActivity
 import com.example.mobileapp.R
 import com.example.mobileapp.activity.MapPickerActivity
 import com.example.mobileapp.activity.RouteMapActivity
-import com.example.mobileapp.data.DangerTypeRepository
 import com.example.mobileapp.data.GraphRepository
 import com.example.mobileapp.data.RouteResult
-import com.example.mobileapp.models.DangerType
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.osmdroid.util.BoundingBox
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Polyline
 import java.util.Locale
 
 class Route (private val activity: AppCompatActivity) {
@@ -229,6 +214,8 @@ class Route (private val activity: AppCompatActivity) {
         intent.putExtra(RouteMapActivity.EXTRA_ROUTE_LNG, DoubleArray(result.points.size) { result.points[it].second })
         intent.putExtra(RouteMapActivity.EXTRA_DISTANCE, result.distanceMeters.toDouble())
         intent.putExtra(RouteMapActivity.EXTRA_MODE, mode)
+        intent.putExtra(RouteMapActivity.EXTRA_TAIL_START, result.startTailMeters)
+        intent.putExtra(RouteMapActivity.EXTRA_TAIL_END, result.endTailMeters)
         intent.putExtra(RouteMapActivity.EXTRA_START_LAT, sLat)
         intent.putExtra(RouteMapActivity.EXTRA_START_LNG, sLng)
         intent.putExtra(RouteMapActivity.EXTRA_END_LAT, eLat)
