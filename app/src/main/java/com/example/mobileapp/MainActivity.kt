@@ -7,6 +7,7 @@ import com.example.mobileapp.data.SyncManager
 import com.example.mobileapp.logic.Hazard
 import com.example.mobileapp.logic.Route
 import com.example.mobileapp.ui.Menu
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.osmdroid.views.MapView
 
 class MainActivity : AppCompatActivity() {
@@ -28,10 +29,24 @@ class MainActivity : AppCompatActivity() {
 
         menu = Menu(this)
 
-        SyncManager.getInstance(this).syncNow {
-            runOnUiThread { mapApi.showHazards(mapView) }
-        }
+        SyncManager.getInstance(this).syncNow(
+            onSuccess = {
+                // сервер ответил — при необходимости обновить данные на экране
+            },
+            onError = {
+                showServerUnavailableDialog()
+            }
+        )
     }
+
+    private fun showServerUnavailableDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Нет связи с сервером")
+            .setMessage("Сервер временно недоступен, данные могут быть не актуальными.")
+            .setPositiveButton("Понятно", null)
+            .show()
+    }
+
 
     override fun onResume() {
         super.onResume()

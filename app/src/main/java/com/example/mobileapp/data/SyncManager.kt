@@ -34,7 +34,31 @@ class SyncManager private constructor(private val context: Context) {
     private fun lastSequence(): Long =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_LAST_SEQ, 0)
 
-    fun syncNow(onDone: (() -> Unit)? = null) {
+    /** Быстрая проверка доступности сервера (HEAD-запрос с таймаутом). */
+    fun checkServerAvailable(onResult: (available: Boolean) -> Unit) {
+        executor.execute {
+            val available = try {
+                val conn = URL(SERVER_URL).openConnection() as HttpURLConnection
+                conn.requestMethod = "HEAD"
+                conn.connectTimeout = 3000
+                conn.readTimeout = 3000
+                val code = conn.responseCode
+                conn.disconnect()
+                code in 200..399
+            } catch (e: Exception) {
+                Log.e("Sync", "Сервер недоступен", e)
+                false
+            }
+            runOnMain { onResult(available) }
+        }
+    }
+
+    /**
+     * Полная синхронизация.
+     * onSuccess — данные получены и применены;
+     * onError — сервер не ответил: нужно показать сообщение пользователю.
+     */
+    fun syncNow(onSuccess: (() -> Unit)? = null, onError: (() -> Unit)? = null) {
         executor.execute {
             try {
                 val body = JSONObject().apply {
@@ -67,17 +91,25 @@ class SyncManager private constructor(private val context: Context) {
 
                 if (conn.responseCode != 200) {
                     Log.e("Sync", "Сервер ответил ${conn.responseCode}")
+                    conn.disconnect()
+                    runOnMain { onError?.invoke() }
                     return@execute
                 }
 
                 val resp = JSONObject(conn.inputStream.bufferedReader().readText())
                 conn.disconnect()
                 applyServerData(resp)
-                onDone?.invoke()
+                runOnMain { onSuccess?.invoke() }
             } catch (e: Exception) {
                 Log.e("Sync", "Нет связи с сервером - работает локально", e)
+                runOnMain { onError?.invoke() }
             }
         }
+    }
+
+    // executor-поток не может трогать UI — перекидываем на главный
+    private fun runOnMain(block: () -> Unit) {
+        android.os.Handler(android.os.Looper.getMainLooper()).post(block)
     }
 
     private fun applyServerData(resp: JSONObject) {
