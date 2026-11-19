@@ -15,8 +15,8 @@ import java.util.concurrent.Executors
 class SyncManager private constructor(private val context: Context) {
 
     companion object {
-        private const val SERVER_URL = "http://10.0.2.2:5000" //для запуска на эмуляторе
-        /*private const val SERVER_URL = "http://192.168.0.16:5000"*/ //для запуска на реальном телефоне
+//        private const val SERVER_URL = "http://10.0.2.2:5000" //для запуска на эмуляторе
+        private const val SERVER_URL = "http://192.168.31.81:5000" //для запуска на реальном телефоне
         private const val PREFS = "sync"
         private const val KEY_LAST_SEQ = "last_sequence"
 
@@ -114,18 +114,28 @@ class SyncManager private constructor(private val context: Context) {
 
     private fun applyServerData(resp: JSONObject) {
         val hazards = resp.getJSONArray("hazards")
+
+        // 1. Добавляем/обновляем всё, что есть на сервере (дедуп по uuid)
+        val serverUuids = HashSet<String>()
         for (i in 0 until hazards.length()) {
             val h = hazards.getJSONObject(i)
-            val localId = repo.localIdByUuid(h.getString("uuid"))
+            val uuid = h.getString("uuid")
+            serverUuids.add(uuid)
+            val localId = repo.localIdByUuid(uuid)
             if (localId != null) {
                 repo.markSynced(localId, h.getLong("sequence_number"))
             } else {
                 repo.insertFromServer(h, h.getLong("sequence_number"))
             }
         }
+
+        // 2. Удаляем локальные записи, которых на сервере больше нет
+        repo.deleteNotIn(serverUuids)
+
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit().putLong(KEY_LAST_SEQ, resp.getLong("last_sequence")).apply()
-        Log.d("Sync", "Синхронизация завершена, получено записей: ${hazards.length()}")
+            .edit().putLong(KEY_LAST_SEQ, resp.optLong("last_sequence", 0L)).apply()
+
+        Log.d("Sync", "Зеркальная синхронизация: на сервере ${hazards.length()} записей")
     }
 
 }

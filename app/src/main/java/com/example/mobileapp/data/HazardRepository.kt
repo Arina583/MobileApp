@@ -169,4 +169,29 @@ class HazardRepository(context: Context) {
         }
         return db.insert("Hazard", null, values)
     }
+
+    /** Удаляет локальные записи, отсутствующие в наборе uuid сервера.
+     *  Несинхронизированные локальные записи (sequence_number = -1) не трогаем —
+     *  они уйдут на сервер при следующем синке. */
+    fun deleteNotIn(serverUuids: Set<String>) {
+        val unsyncedIds = unsynced().map { it.id }.toSet()
+        val toDelete = ArrayList<Long>()
+
+        db.rawQuery("SELECT id, uuid FROM Hazard", null).use { c ->
+            while (c.moveToNext()) {
+                val id = c.getLong(0)
+                val uuid = c.getString(1)
+                if (id !in unsyncedIds && (uuid == null || uuid !in serverUuids)) {
+                    toDelete.add(id)
+                }
+            }
+        }
+
+        for (id in toDelete) {
+            db.delete("Hazard", "id = ?", arrayOf(id.toString()))
+        }
+        Log.d("HazardRepository", "Зеркальная синхронизация: удалено устаревших записей: ${toDelete.size}")
+    }
+
+
 }
